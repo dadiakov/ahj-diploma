@@ -37,9 +37,15 @@
   border-radius: 10px;
   padding: 20px;
   overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  position: relative;
 }
 
 .message-input {
+  padding-right: 40px;
   font-family: inherit;
   font-size: inherit;
   width: 100%;
@@ -83,7 +89,11 @@ h3 {
 }
 
 .message-item {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  border: 2px solid lightgray;
+  padding: 10px;
+  border-radius: 10px;
+  position: relative;
 }
 
 .my-message {
@@ -111,8 +121,8 @@ h3 {
   position: absolute;
   top: 5px;
   right: 15px;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 .image {
@@ -121,4 +131,25 @@ h3 {
 
 .video {
   max-width: 350px;
+}
+
+.text-message-back {
+  background-color: #b7ffb7;
+}
+
+.file-message-back {
+  background-color: rgb(188, 210, 228);
+}
+
+div[data-type="image"]:hover > a {
+  display: inline-block;
+}
+
+.download-link {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  background: url(../img/download.png) center center no-repeat;
+  background-size: contain;
+  right: 15px;
 }

@@ -25,8 +25,17 @@ class Chat {
     this.inputTag.addEventListener('click', this.onClick.bind(this));
     this.fileInput = this.element.querySelector('.input-file');
     this.fileInput.addEventListener('input', this.onUpload.bind(this));
-
+    this.element.addEventListener('dragover', this.onDragOver.bind(this));
+    this.element.addEventListener('drop', this.onDragDrop.bind(this));
     this.messageForm.addEventListener('submit', this.sendMessage);
+    this.renderData = this.renderData.bind(this);
+    this.element.querySelector('.messages-content').addEventListener('scroll', this.watchElement.bind(this));
+    this.successHandler = this.successHandler.bind(this);
+    this.errorHandler = this.errorHandler.bind(this);
+    this.addCoords = this.addCoords.bind(this);
+    this.addNotificaition = this.addNotificaition.bind(this);
+    this.addCoords();
+    this.addNotificaition();
   }
 
   sendMessage(e) {
@@ -36,7 +45,7 @@ class Chat {
     const id = uuidv4();
 
     const data = {
-      id, type: 'text', text: value, time,
+      id, type: 'text', text: value, time, coords: this.coords,
     };
 
     if (value.match(/https?:\/\/[^\s]+/gm)) {
@@ -46,19 +55,26 @@ class Chat {
     document.querySelector('.message-input').value = '';
   }
 
-  renderMessage(message) {
+  renderMessage(message, type = 'none') {
     const outerDiv = document.createElement('div');
     outerDiv.className = 'message-item my-message';
     const timeDiv = document.createElement('div');
     timeDiv.textContent = `${message.time}`;
     timeDiv.classList.add('time');
     outerDiv.appendChild(timeDiv);
+
+    const coordsDiv = document.createElement('div');
+    coordsDiv.textContent = `Координаты - ${this.coords}`;
+    coordsDiv.classList.add('time');
+    outerDiv.appendChild(coordsDiv);
+
     outerDiv.dataset.id = message.id;
     outerDiv.dataset.type = message.type;
     const textDiv = document.createElement('div');
 
     if (message.type === 'text') {
       textDiv.textContent = message.text;
+      outerDiv.classList.add('text-message-back');
       outerDiv.appendChild(textDiv);
     }
 
@@ -74,6 +90,14 @@ class Chat {
       image.download = `${message.name}`;
       image.className = 'image';
       outerDiv.appendChild(image);
+
+      const link = document.createElement('a');
+      link.href = message.data;
+      // link.textContent = message.name;
+      link.download = `${message.name}`;
+      link.target = '_blank';
+      link.className = 'download-link hide';
+      outerDiv.appendChild(link);
       URL.revokeObjectURL(message.data);
     }
     if (message.type === 'video') {
@@ -84,6 +108,7 @@ class Chat {
       video.className = 'video';
       video.controls = true;
       outerDiv.appendChild(video);
+
       video.addEventListener('canplay', () => {
         URL.revokeObjectURL(message.data);
       });
@@ -106,16 +131,21 @@ class Chat {
       link.textContent = message.name;
       link.download = `${message.name}`;
       link.target = '_blank';
+      outerDiv.classList.add('file-message-back');
       outerDiv.appendChild(link);
       URL.revokeObjectURL(message.data);
     }
 
-    document.querySelector('.messages-content').appendChild(outerDiv);
-    outerDiv.scrollIntoView(false);
+    if (type === 'lazy') {
+      document.querySelector('.messages-content').insertBefore(outerDiv, document.querySelector('.messages-content').firstElementChild);
+    } else {
+      document.querySelector('.messages-content').appendChild(outerDiv);
+      document.querySelector('.messages-content').lastElementChild.scrollIntoView(false);
+    }
   }
 
-  renderAllData() {
-    ws.send('allData');
+  renderData(length) {
+    ws.send(JSON.stringify({ message: 'getData', length }));
   }
 
   onClick(e) {
@@ -127,41 +157,124 @@ class Chat {
     const { target } = e;
     const file = target.files && target.files[0];
     const reader = new FileReader();
-    console.log(file);
+    let type = 'file';
 
     if (file.type.match(/image/)) {
-      reader.readAsDataURL(file);
-      reader.addEventListener('load', (e) => {
-        const data = {
-          id: uuidv4(), type: 'image', time: getCurrentTime(), data: e.target.result, name: file.name,
-        };
-        ws.send(JSON.stringify(data));
-      });
+      type = 'image';
     } else if (file.type.match(/video/)) {
-      reader.readAsDataURL(file);
-      reader.addEventListener('load', (e) => {
-        const data = {
-          id: uuidv4(), type: 'video', time: getCurrentTime(), data: e.target.result, name: file.name,
-        };
-        ws.send(JSON.stringify(data));
-      });
+      type = 'video';
     } else if (file.type.match(/audio/)) {
-      reader.readAsDataURL(file);
-      reader.addEventListener('load', (e) => {
-        const data = {
-          id: uuidv4(), type: 'audio', time: getCurrentTime(), data: e.target.result, name: file.name,
-        };
-        ws.send(JSON.stringify(data));
-      });
-    } else {
-      reader.readAsDataURL(file);
-      reader.addEventListener('load', (e) => {
-        const data = {
-          id: uuidv4(), type: 'file', time: getCurrentTime(), data: e.target.result, name: file.name,
-        };
-        ws.send(JSON.stringify(data));
-      });
+      type = 'audio';
     }
+    reader.readAsDataURL(file);
+    reader.addEventListener('load', (e) => {
+      const data = {
+        id: uuidv4(), type, time: getCurrentTime(), data: e.target.result, name: file.name,
+      };
+      ws.send(JSON.stringify(data));
+    });
+
+    // if (file.type.match(/image/)) {
+    //   reader.readAsDataURL(file);
+    //   reader.addEventListener('load', (e) => {
+    //     const data = {
+    //       id: uuidv4(), type: 'image', time: getCurrentTime(), data: e.target.result, name: file.name,
+    //     };
+    //     ws.send(JSON.stringify(data));
+    //   });
+    // } else if (file.type.match(/video/)) {
+    //   reader.readAsDataURL(file);
+    //   reader.addEventListener('load', (e) => {
+    //     const data = {
+    //       id: uuidv4(), type: 'video', time: getCurrentTime(), data: e.target.result, name: file.name,
+    //     };
+    //     ws.send(JSON.stringify(data));
+    //   });
+    // } else if (file.type.match(/audio/)) {
+    //   reader.readAsDataURL(file);
+    //   reader.addEventListener('load', (e) => {
+    //     const data = {
+    //       id: uuidv4(), type: 'audio', time: getCurrentTime(), data: e.target.result, name: file.name,
+    //     };
+    //     ws.send(JSON.stringify(data));
+    //   });
+    // } else {
+    //   reader.readAsDataURL(file);
+    //   reader.addEventListener('load', (e) => {
+    //     const data = {
+    //       id: uuidv4(), type: 'file', time: getCurrentTime(), data: e.target.result, name: file.name,
+    //     };
+    //     ws.send(JSON.stringify(data));
+    //   });
+    // }
+  }
+
+  onDragOver(e) {
+    e.preventDefault();
+  }
+
+  onDragDrop(e) {
+    e.preventDefault();
+    this.onUpload({ target: e.dataTransfer });
+  }
+
+  watchElement(e) {
+    if (this.element.querySelector('.messages-content').firstElementChild.getBoundingClientRect().top > 70) {
+      this.renderData(document.querySelectorAll('.message-item').length);
+    }
+  }
+
+  addCoords() {
+    const geoOptions = {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0,
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(this.successHandler, this.errorHandler, geoOptions);
+    }
+  }
+
+  successHandler(position) {
+    const { latitude, longitude } = position.coords;
+    this.coords = `[${latitude.toFixed(5)}, ${longitude.toFixed(5)}]`;
+    console.log(this.coords);
+  }
+
+  errorHandler(e) {
+    if (e.code === 1) {
+      console.log('Не удалось получить информацию о геолокации, поскольку у страницы не было разрешения на это.');
+    } else if (e.code === 2) {
+      console.log('Не удалось получить геолокацию, поскольку по крайней мере один внутренний источник позиции вернул внутреннюю ошибку.');
+    } else if (e.code === 3) {
+      console.log('Слижком долго получаем информацию...');
+    }
+  }
+
+  addNotificaition() {
+    (async () => {
+      if (!window.Notification) {
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        const notification = new Notification('Мысли котика', {
+          body: 'Съесть бы сейчас большую сосиску',
+          icon: 'src/img/kitty.jpg',
+          requireInteractions: true,
+        });
+      }
+      if (Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          const notification = new Notification('Мысли котика', {
+            body: 'Съесть бы сейчас большую сосиску',
+            icon: 'src/img/kitty.jpg',
+            requireInteractions: true,
+          });
+        }
+      }
+    })();
   }
 }
 
@@ -184,7 +297,7 @@ const ws = new WebSocket('ws://localhost:7070//ws');
 
 ws.addEventListener('open', () => {
   console.log('connected');
-  chat.renderAllData();
+  chat.renderData(document.querySelectorAll('.message-item').length);
 });
 
 ws.addEventListener('message', (evt) => {
@@ -192,9 +305,11 @@ ws.addEventListener('message', (evt) => {
 
   const cleanData = JSON.parse(data);
 
-  if (Array.isArray(cleanData.messages)) {
-    console.log(cleanData.messages);
-    cleanData.messages.forEach((e) => chat.renderMessage(e));
+  if (Array.isArray(cleanData.array)) {
+    cleanData.array.forEach((e) => chat.renderMessage(e, 'lazy'));
+    if (document.querySelectorAll('.message-item').length <= 10) {
+      document.querySelector('.messages-content').lastElementChild.scrollIntoView(false);
+    }
     return;
   }
 

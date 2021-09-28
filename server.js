@@ -19,23 +19,49 @@ const port = process.env.PORT || 7070;
 const server = http.createServer(app.callback());
 const wsServer = new WS.Server({ server });
 
-const messages = [{ id: uuidv4(), type: 'text', text: 'Some text', time : getCurrentTime() }];
+const messages = [
+{ id: uuidv4(), type: 'text', text: 'Some text1', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text2', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text3', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text4', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text5', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text6', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text7', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text8', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text9', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text10', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text11', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text12', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text13', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text14', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text15', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text16', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text17', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text18', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text19', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text20', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text21', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text22', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text23', time : getCurrentTime() },
+{ id: uuidv4(), type: 'text', text: 'Some text24', time : getCurrentTime() }
+];
 
 wsServer.on('connection', (ws) => {
-
+console.log('server start')
   const errCallback = (e) => { console.log(e); };
 
   ws.on('message', (e) => {
 
-    if (e === 'allData') {
+    const incomeObj = JSON.parse(e);
 
-      ws.send(JSON.stringify({ messages }), errCallback);
+    if (incomeObj.message && incomeObj.message === 'getData') {
+      
+      const arrayOfMessages = getData(incomeObj.length);
+      ws.send(JSON.stringify({ array: arrayOfMessages, type: 'lazy' }), errCallback);
       return;
     }
-
-    // if (JSON.parse(e).type === 'simple-text' || JSON.parse(e).type === 'a-link') {
      
-        messages.push(JSON.parse(e));
+        messages.push(incomeObj);
 
         Array.from(wsServer.clients)
           .filter(client => client.readyState === WS.OPEN)
@@ -66,4 +92,13 @@ function getCurrentTime() {
   let minutes = now.getMinutes();
   if (minutes < 10) minutes = `${0}${minutes}`;
   return `${day}.${month}.${year} ${hour}:${minutes}`;
+}
+
+function getData(currentLength) {
+  let array = [];
+  for (let i = messages.length - currentLength - 1; i > messages.length - currentLength - 11; i--) {
+    array.push(messages[i]); 
+  }
+  let cleanArray = array.filter(Boolean);
+  return cleanArray;
 }
