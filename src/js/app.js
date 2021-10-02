@@ -91,6 +91,16 @@ class Chat {
       outerDiv.classList.add('text-message-back');
       outerDiv.appendChild(textDiv);
     }
+    const createLink = () => {
+      const link = document.createElement('a');
+      link.href = message.data;
+      link.textContent = 'скачать';
+      link.download = `${message.name}`;
+      link.rel = 'noopener';
+      link.target = '_blank';
+      link.className = 'download-link hide';
+      return link;
+    };
 
     if (message.type === 'image') {
       const image = document.createElement('img');
@@ -98,57 +108,27 @@ class Chat {
       image.download = `${message.name}`;
       image.className = 'image';
       outerDiv.appendChild(image);
-
-      const link = document.createElement('a');
-      link.href = message.data;
-      link.textContent = 'скачать';
-      link.download = `${message.name}`;
-      link.target = '_blank';
-      link.className = 'download-link hide';
-      outerDiv.appendChild(link);
+      outerDiv.appendChild(createLink());
       URL.revokeObjectURL(message.data);
     }
-    if (message.type === 'video') {
-      const video = document.createElement('video');
-      video.src = message.data;
-      video.download = `${message.name}`;
-      video.rel = 'noopener';
-      video.className = 'video';
-      video.controls = true;
-      outerDiv.appendChild(video);
 
-      const link = document.createElement('a');
-      link.href = message.data;
-      link.textContent = 'скачать';
-      link.download = `${message.name}`;
-      link.target = '_blank';
-      link.className = 'download-link hide';
-      outerDiv.appendChild(link);
-
-      video.addEventListener('canplay', () => {
+    const createMediaFile = (type) => {
+      const mediaEl = document.createElement(type);
+      mediaEl.src = message.data;
+      mediaEl.download = `${message.name}`;
+      mediaEl.className = type;
+      mediaEl.controls = true;
+      outerDiv.appendChild(mediaEl);
+      outerDiv.appendChild(createLink());
+      mediaEl.addEventListener('canplay', () => {
         URL.revokeObjectURL(message.data);
       });
-    }
-    if (message.type === 'audio') {
-      const audio = document.createElement('audio');
-      audio.src = message.data;
-      audio.download = `${message.name}`;
-      audio.className = 'audio';
-      audio.controls = true;
-      outerDiv.appendChild(audio);
+    };
 
-      const link = document.createElement('a');
-      link.href = message.data;
-      link.textContent = 'скачать';
-      link.download = `${message.name}`;
-      link.target = '_blank';
-      link.className = 'download-link hide';
-      outerDiv.appendChild(link);
-
-      audio.addEventListener('canplay', () => {
-        URL.revokeObjectURL(message.data);
-      });
+    if (message.type === 'video' || message.type === 'audio') {
+      createMediaFile(message.type);
     }
+
     if (message.type === 'file') {
       const link = document.createElement('a');
       link.href = message.data;
@@ -182,6 +162,8 @@ class Chat {
     const file = target.files && target.files[0];
     const reader = new FileReader();
     let type = 'file';
+
+    if (!file) return;
 
     if (file.type.match(/image/)) {
       type = 'image';
@@ -294,7 +276,7 @@ function getCurrentTime() {
 
 const chat = new Chat('.container');
 
-//const ws = new WebSocket('ws://localhost:7070//ws');
+// const ws = new WebSocket('ws://localhost:7070//ws');
 const ws = new WebSocket('wss://dadiakov-ahj-diploma.herokuapp.com//wss');
 
 ws.addEventListener('open', () => {

@@ -123,6 +123,7 @@ h3 {
   right: 15px;
   width: 20px;
   height: 20px;
+  cursor: pointer;
 }
 
 .image {
@@ -172,4 +173,8 @@ div[data-type="video"]:hover > a {
   border: 2px solid gray;
   padding-left: 10px;
   outline: none;
+}
+
+.new-link {
+  display: blick;
 }
