@@ -86,6 +86,7 @@ class Chat {
     if (message.type === 'link') {
       const text = message.text.replace(/https?:\/\/[^\s]+/gm, (str) => `<a href='${str}' target='_blank'>${str}</a>`);
       textDiv.innerHTML = text;
+      outerDiv.classList.add('text-message-back');
       outerDiv.appendChild(textDiv);
     }
 
