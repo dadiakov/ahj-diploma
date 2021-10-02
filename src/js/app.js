@@ -209,8 +209,7 @@ class Chat {
   watchElement(e) {
     if (this.element.querySelectorAll('.message-item').length < 10) return;
     if (!this.element.querySelector('.messages-content').firstElementChild) return;
-    if (this.element.querySelector('.messages-content').firstElementChild.getBoundingClientRect().top - this.element.querySelector('.messages-content').getBoundingClientRect().top > 15) {
-      console.log('событие');
+    if (this.element.querySelector('.messages-content').firstElementChild.getBoundingClientRect().top - this.element.querySelector('.messages-content').getBoundingClientRect().top > 21.3) {
       this.renderData(document.querySelectorAll('.message-item').length, this.sortInput.value);
     }
   }
