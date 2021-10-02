@@ -292,7 +292,7 @@ function getCurrentTime() {
 const chat = new Chat('.container');
 
 //const ws = new WebSocket('ws://localhost:7070//ws');
-const ws = new WebSocket('wss://dadiakov-ahj-dip.herokuapp.com//wss');
+const ws = new WebSocket('wss://dadiakov-ahj-diploma.herokuapp.com//wss');
 
 ws.addEventListener('open', () => {
   console.log('connected');
