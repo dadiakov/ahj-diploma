@@ -15,6 +15,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import kitty from '../img/kitty.jpg';
 
+let targetElement = null;
+
 class Chat {
   constructor(element) {
     if (typeof element === 'string') {
@@ -306,6 +308,10 @@ ws.addEventListener('message', (evt) => {
   const cleanData = JSON.parse(data);
 
   if (Array.isArray(cleanData.array)) {
+    if (!cleanData.array[0]) return;
+
+    targetElement = document.querySelector('.messages-content').firstElementChild;
+
     cleanData.array.forEach((e) => chat.renderMessage(e, 'lazy'));
 
     if (!document.querySelector('.messages-content').lastElementChild) return;
@@ -313,6 +319,11 @@ ws.addEventListener('message', (evt) => {
     if (document.querySelectorAll('.message-item').length <= 10) {
       document.querySelector('.messages-content').lastElementChild.scrollIntoView(false);
     }
+
+    if (document.querySelectorAll('.message-item').length > 10) {
+      targetElement.scrollIntoView({ block: 'start', behavior: 'auto' });
+    }
+
     return;
   }
 
