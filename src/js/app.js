@@ -13,6 +13,7 @@
 /* eslint-disable class-methods-use-this */
 
 import { v4 as uuidv4 } from 'uuid';
+import kitty from '../img/kitty.jpg';
 
 class Chat {
   constructor(element) {
@@ -247,7 +248,7 @@ class Chat {
       if (Notification.permission === 'granted') {
         const notification = new Notification('Мысли котика', {
           body: 'Съесть бы сейчас большую сосиску',
-          icon: '../img/kitty.png',
+          icon: kitty,
           requireInteractions: true,
         });
       }
@@ -256,7 +257,7 @@ class Chat {
         if (permission === 'granted') {
           const notification = new Notification('Мысли котика', {
             body: 'Съесть бы сейчас большую сосиску',
-            icon: '../img/kitty.png',
+            icon: kitty,
             requireInteractions: true,
           });
         }
