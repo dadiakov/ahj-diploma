@@ -27,7 +27,8 @@ class Chat {
     this.fileInput.addEventListener('input', this.onUpload.bind(this));
     this.element.addEventListener('dragover', this.onDragOver.bind(this));
     this.element.addEventListener('drop', this.onDragDrop.bind(this));
-    this.messageForm.addEventListener('submit', this.sendMessage);
+    this.messageForm.addEventListener('submit', this.sendMessage.bind(this));
+    this.sendMessage = this.sendMessage.bind(this);
     this.renderData = this.renderData.bind(this);
     this.element.querySelector('.messages-content').addEventListener('scroll', this.watchElement.bind(this));
     this.successHandler = this.successHandler.bind(this);
@@ -40,7 +41,7 @@ class Chat {
 
   sendMessage(e) {
     e.preventDefault();
-    const { value } = document.querySelector('.message-input');
+    const { value } = this.element.querySelector('.message-input');
     const time = getCurrentTime();
     const id = uuidv4();
 
@@ -52,7 +53,7 @@ class Chat {
       data.type = 'link';
     }
     ws.send(JSON.stringify(data));
-    document.querySelector('.message-input').value = '';
+    this.element.querySelector('.message-input').value = '';
   }
 
   renderMessage(message, type = 'none') {
@@ -64,7 +65,7 @@ class Chat {
     outerDiv.appendChild(timeDiv);
 
     const coordsDiv = document.createElement('div');
-    coordsDiv.textContent = `Координаты - ${this.coords}`;
+    coordsDiv.textContent = `Координаты - ${message.coords}`;
     coordsDiv.classList.add('time');
     outerDiv.appendChild(coordsDiv);
 
@@ -93,7 +94,7 @@ class Chat {
 
       const link = document.createElement('a');
       link.href = message.data;
-      // link.textContent = message.name;
+      link.textContent = 'скачать';
       link.download = `${message.name}`;
       link.target = '_blank';
       link.className = 'download-link hide';
@@ -109,6 +110,14 @@ class Chat {
       video.controls = true;
       outerDiv.appendChild(video);
 
+      const link = document.createElement('a');
+      link.href = message.data;
+      link.textContent = 'скачать';
+      link.download = `${message.name}`;
+      link.target = '_blank';
+      link.className = 'download-link hide';
+      outerDiv.appendChild(link);
+
       video.addEventListener('canplay', () => {
         URL.revokeObjectURL(message.data);
       });
@@ -120,6 +129,14 @@ class Chat {
       audio.className = 'audio';
       audio.controls = true;
       outerDiv.appendChild(audio);
+
+      const link = document.createElement('a');
+      link.href = message.data;
+      link.textContent = 'скачать';
+      link.download = `${message.name}`;
+      link.target = '_blank';
+      link.className = 'download-link hide';
+      outerDiv.appendChild(link);
 
       audio.addEventListener('canplay', () => {
         URL.revokeObjectURL(message.data);
@@ -169,7 +186,7 @@ class Chat {
     reader.readAsDataURL(file);
     reader.addEventListener('load', (e) => {
       const data = {
-        id: uuidv4(), type, time: getCurrentTime(), data: e.target.result, name: file.name,
+        id: uuidv4(), type, time: getCurrentTime(), data: e.target.result, name: file.name, coords: this.coords,
       };
       ws.send(JSON.stringify(data));
     });
@@ -219,7 +236,7 @@ class Chat {
   }
 
   watchElement(e) {
-    if (this.element.querySelector('.messages-content').firstElementChild.getBoundingClientRect().top > 70) {
+    if (this.element.querySelector('.messages-content').firstElementChild.getBoundingClientRect().top - this.element.querySelector('.messages-content').getBoundingClientRect().top > 15) {
       this.renderData(document.querySelectorAll('.message-item').length);
     }
   }

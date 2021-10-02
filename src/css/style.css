@@ -133,6 +133,12 @@ h3 {
   max-width: 350px;
 }
 
+.image,
+.video,
+.audio {
+  padding-bottom: 20px;
+}
+
 .text-message-back {
   background-color: #b7ffb7;
 }
@@ -141,15 +147,16 @@ h3 {
   background-color: rgb(188, 210, 228);
 }
 
-div[data-type="image"]:hover > a {
-  display: inline-block;
+div[data-type="image"]:hover > a,
+div[data-type="audio"]:hover > a,
+div[data-type="video"]:hover > a {
+  display: block;
 }
 
 .download-link {
   position: absolute;
-  width: 25px;
-  height: 25px;
-  background: url(../img/download.png) center center no-repeat;
-  background-size: contain;
+  bottom: 10px;
   right: 15px;
+  text-decoration: none;
+  color: lightgray;
 }
