@@ -21,14 +21,14 @@ const wsServer = new WS.Server({ server });
 
 const messages = [
 { id: uuidv4(), type: 'text', text: 'Some text1', time : getCurrentTime(), coords: '[50.85182, 60.56103]' },
-{ id: uuidv4(), type: 'text', text: 'Some text2', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
-{ id: uuidv4(), type: 'text', text: 'Some text3', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
-{ id: uuidv4(), type: 'text', text: 'Some text4', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
-{ id: uuidv4(), type: 'text', text: 'Some text5', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
-{ id: uuidv4(), type: 'text', text: 'Some text6', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
-{ id: uuidv4(), type: 'text', text: 'Some text7', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
-{ id: uuidv4(), type: 'text', text: 'Some text8', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
-{ id: uuidv4(), type: 'text', text: 'Some text9', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
+{ id: uuidv4(), type: 'text', text: 'Som text2', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
+{ id: uuidv4(), type: 'text', text: 'So text3', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
+{ id: uuidv4(), type: 'text', text: 'S text4', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
+{ id: uuidv4(), type: 'text', text: 'Some tex5', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
+{ id: uuidv4(), type: 'text', text: 'Some te6', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
+{ id: uuidv4(), type: 'text', text: 'Some t7', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
+{ id: uuidv4(), type: 'text', text: 'Some 8', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
+{ id: uuidv4(), type: 'text', text: 'Some9', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
 { id: uuidv4(), type: 'text', text: 'Some text10', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
 { id: uuidv4(), type: 'text', text: 'Some text11', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
 { id: uuidv4(), type: 'text', text: 'Some text12', time : getCurrentTime(), coords: '[50.85182, 60.56103]'  },
@@ -54,6 +54,12 @@ console.log('server start')
 
     const incomeObj = JSON.parse(e);
 
+    if (incomeObj.message && incomeObj.message === 'getData' && incomeObj.sortValue !== undefined) {
+      const arrayOfMessages = getData(incomeObj.length, incomeObj.sortValue);
+      ws.send(JSON.stringify({ array: arrayOfMessages, type: 'lazy' }), errCallback);
+      return;
+    }
+
     if (incomeObj.message && incomeObj.message === 'getData') {
       
       const arrayOfMessages = getData(incomeObj.length);
@@ -66,16 +72,6 @@ console.log('server start')
         Array.from(wsServer.clients)
           .filter(client => client.readyState === WS.OPEN)
           .forEach(client => client.send(e));
-    
-      
-    //   return;
-    // }
-
-
-    // Array.from(wsServer.clients)
-    //   .filter(client => client.readyState === WS.OPEN)
-    //   .forEach(client => client.send(JSON.stringify({ message : e }), errCallback));
-
   });  
 });
 
@@ -94,8 +90,17 @@ function getCurrentTime() {
   return `${day}.${month}.${year} ${hour}:${minutes}`;
 }
 
-function getData(currentLength) {
+function getData(currentLength, sortValue) {
   let array = [];
+  if (sortValue) {
+    const re = new RegExp(sortValue, 'i');
+    let sortedArray = messages.filter(e => re.exec(e.text));
+    for (let i = sortedArray.length - currentLength - 1; i > sortedArray.length - currentLength - 11; i--) {
+      array.push(sortedArray[i]); 
+    }
+    let cleanArray = array.filter(Boolean);
+    return cleanArray;
+  }
   for (let i = messages.length - currentLength - 1; i > messages.length - currentLength - 11; i--) {
     array.push(messages[i]); 
   }

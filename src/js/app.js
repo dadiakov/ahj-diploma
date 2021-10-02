@@ -1,4 +1,5 @@
 /* eslint-disable linebreak-style */
+/* eslint-disable spaced-comment */
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable max-len */
 /* eslint-disable no-use-before-define */
@@ -35,6 +36,8 @@ class Chat {
     this.errorHandler = this.errorHandler.bind(this);
     this.addCoords = this.addCoords.bind(this);
     this.addNotificaition = this.addNotificaition.bind(this);
+    this.sortInput = this.element.querySelector('.sort-input');
+    this.sortInput.addEventListener('input', this.getSorted.bind(this));
     this.addCoords();
     this.addNotificaition();
   }
@@ -161,8 +164,8 @@ class Chat {
     }
   }
 
-  renderData(length) {
-    ws.send(JSON.stringify({ message: 'getData', length }));
+  renderData(length, sortValue = undefined) {
+    ws.send(JSON.stringify({ message: 'getData', length, sortValue }));
   }
 
   onClick(e) {
@@ -190,40 +193,6 @@ class Chat {
       };
       ws.send(JSON.stringify(data));
     });
-
-    // if (file.type.match(/image/)) {
-    //   reader.readAsDataURL(file);
-    //   reader.addEventListener('load', (e) => {
-    //     const data = {
-    //       id: uuidv4(), type: 'image', time: getCurrentTime(), data: e.target.result, name: file.name,
-    //     };
-    //     ws.send(JSON.stringify(data));
-    //   });
-    // } else if (file.type.match(/video/)) {
-    //   reader.readAsDataURL(file);
-    //   reader.addEventListener('load', (e) => {
-    //     const data = {
-    //       id: uuidv4(), type: 'video', time: getCurrentTime(), data: e.target.result, name: file.name,
-    //     };
-    //     ws.send(JSON.stringify(data));
-    //   });
-    // } else if (file.type.match(/audio/)) {
-    //   reader.readAsDataURL(file);
-    //   reader.addEventListener('load', (e) => {
-    //     const data = {
-    //       id: uuidv4(), type: 'audio', time: getCurrentTime(), data: e.target.result, name: file.name,
-    //     };
-    //     ws.send(JSON.stringify(data));
-    //   });
-    // } else {
-    //   reader.readAsDataURL(file);
-    //   reader.addEventListener('load', (e) => {
-    //     const data = {
-    //       id: uuidv4(), type: 'file', time: getCurrentTime(), data: e.target.result, name: file.name,
-    //     };
-    //     ws.send(JSON.stringify(data));
-    //   });
-    // }
   }
 
   onDragOver(e) {
@@ -236,8 +205,10 @@ class Chat {
   }
 
   watchElement(e) {
+    if (this.element.querySelectorAll('.message-item').length < 10) return;
+    if (!this.element.querySelector('.messages-content').firstElementChild) return;
     if (this.element.querySelector('.messages-content').firstElementChild.getBoundingClientRect().top - this.element.querySelector('.messages-content').getBoundingClientRect().top > 15) {
-      this.renderData(document.querySelectorAll('.message-item').length);
+      this.renderData(document.querySelectorAll('.message-item').length, this.sortInput.value);
     }
   }
 
@@ -256,7 +227,6 @@ class Chat {
   successHandler(position) {
     const { latitude, longitude } = position.coords;
     this.coords = `[${latitude.toFixed(5)}, ${longitude.toFixed(5)}]`;
-    console.log(this.coords);
   }
 
   errorHandler(e) {
@@ -293,6 +263,16 @@ class Chat {
       }
     })();
   }
+
+  getSorted(e) {
+    this.element.querySelector('.messages-content').innerHTML = '';
+    if (this.sortInput.value === '') {
+      this.element.querySelector('.messages-content').innerHTML = '';
+      this.renderData(0);
+      return;
+    }
+    this.renderData(document.querySelectorAll('.message-item').length, this.sortInput.value);
+  }
 }
 
 function getCurrentTime() {
@@ -310,7 +290,8 @@ function getCurrentTime() {
 
 const chat = new Chat('.container');
 
-const ws = new WebSocket('ws://localhost:7070//ws');
+//const ws = new WebSocket('ws://localhost:7070//ws');
+const ws = new WebSocket('wss://dadiakov-ahj-dip.herokuapp.com//wss');
 
 ws.addEventListener('open', () => {
   console.log('connected');
@@ -324,6 +305,9 @@ ws.addEventListener('message', (evt) => {
 
   if (Array.isArray(cleanData.array)) {
     cleanData.array.forEach((e) => chat.renderMessage(e, 'lazy'));
+
+    if (!document.querySelector('.messages-content').lastElementChild) return;
+
     if (document.querySelectorAll('.message-item').length <= 10) {
       document.querySelector('.messages-content').lastElementChild.scrollIntoView(false);
     }
