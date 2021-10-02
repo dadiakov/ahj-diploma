@@ -247,7 +247,7 @@ class Chat {
       if (Notification.permission === 'granted') {
         const notification = new Notification('Мысли котика', {
           body: 'Съесть бы сейчас большую сосиску',
-          icon: 'src/img/kitty.jpg',
+          icon: '../img/kitty.jpg',
           requireInteractions: true,
         });
       }
@@ -256,7 +256,7 @@ class Chat {
         if (permission === 'granted') {
           const notification = new Notification('Мысли котика', {
             body: 'Съесть бы сейчас большую сосиску',
-            icon: 'src/img/kitty.jpg',
+            icon: '../img/kitty.jpg',
             requireInteractions: true,
           });
         }
